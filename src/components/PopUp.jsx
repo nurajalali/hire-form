@@ -7,19 +7,30 @@ import {
   Grid,
   Column,
 } from "@carbon/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-const PopUp = ({ data }) => {
+const PopUp = ({ formEditing }) => {
   const [FirstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [ID, setID] = useState();
   const [BirthDay, setBirthDay] = useState();
   const [status, setStatus] = useState();
+  const counter = useSelector((store) => store.FormModels.counter);
   const isEdit = useSelector((store) => store.FormModels.isEdit);
   const editedRow = useSelector((store) =>
-    store.FormModels.rows.find((item) => item.id === data)
+    store.FormModels.rows.find((item) => item.rowId === formEditing)
   );
+  
+  useEffect(() => {
+    if (isEdit) {
+      setFirstName(editedRow.FirstName);
+      setLastName(editedRow.lastName);
+      setBirthDay(editedRow.BirthDate);
+      setID(editedRow.personalId);
+      setStatus(editedRow.status);
+    }
+  }, []);
 
   const dispatch = useDispatch();
 
@@ -42,26 +53,30 @@ const PopUp = ({ data }) => {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
+    dispatch.FormModels.newCounter();
     const newRow = {
-      id: Math.random(),
       FirstName: FirstName,
       lastName: lastName,
       personalId: ID,
       BirthDate: BirthDay,
       status: status,
     };
-    dispatch.FormModels.addNewRows(newRow);
+    if (isEdit) {
+      console.log("form editing is", formEditing);
+      console.log(newRow);
+      dispatch.FormModels.updateRowTable({ ...newRow, rowId: formEditing });
+    } else {
+      dispatch.FormModels.addNewRows({ ...newRow, rowId: counter });
+    }
   };
-
   return (
     <>
-      <h1>{data}</h1>
-      <h2>{JSON.stringify(editedRow)}</h2>
       <Grid narrow>
         <Column lg={4}>
           <FluidTextInput
             labelText="FisrtName"
-            value={isEdit ? editedRow?.FirstName : ""}
+            type="text"
+            value={FirstName}
             placeholder="example: nura"
             id="input-1"
             onChange={handleFN}
@@ -70,8 +85,8 @@ const PopUp = ({ data }) => {
         <Column lg={4}>
           <FluidTextInput
             labelText="LastName"
+            value={lastName}
             placeholder="example: jalali"
-            value={isEdit ? editedRow?.lastName : ""}
             id="input-1"
             onChange={handleLN}
           />
@@ -82,7 +97,7 @@ const PopUp = ({ data }) => {
           <FluidTextInput
             labelText="ID number"
             placeholder="0082689762"
-            value={isEdit ? editedRow?.personalId : ""}
+            value={ID}
             id="input-1"
             onChange={handleID}
           />
@@ -96,8 +111,8 @@ const PopUp = ({ data }) => {
             <DatePickerInput
               placeholder="dd/mm/yyyy"
               labelText="BirthDay"
+              value={BirthDay}
               id="date-picker-single"
-              value={!isEdit ? editedRow?.BirthDay : ""}
               size="md"
               onInput={handleDate}
             />
@@ -107,9 +122,9 @@ const PopUp = ({ data }) => {
       <Grid>
         <Column lg={4}>
           <Dropdown
-            id="default"
             titleText="Status"
             label="choose your status"
+            value={status}
             size="lg"
             items={["Pending", "Accepted", "Rejected"]}
             onChange={handleStatus}

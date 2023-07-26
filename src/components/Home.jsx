@@ -3,16 +3,27 @@ import DataTable from "./DataTable";
 import PopUp from "./PopUp";
 import { Add } from "@carbon/icons-react";
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const Home = () => {
   const isOpen = useSelector((store) => store.FormModels.isOpen);
   const dispatch = useDispatch();
-  const [data, setData] = useState();
+
+  const [formEditing, setFormEditing] = useState(null);
+  const [searchValue, setSearchValue] = useState("");
+
+  const searchRef = useRef(null);
 
   const togglePopup = () => {
+    dispatch.FormModels.isNotEdit();
     dispatch.FormModels.openForm(!isOpen);
   };
+
+  const handleSearch = () => {
+    console.log(searchRef.current.value);
+    setSearchValue(searchRef.current.value);
+  };
+
   return (
     <div>
       <Stack gap={8}>
@@ -24,6 +35,8 @@ const Home = () => {
               labelText="Search"
               closeButtonLabelText="Clear search input"
               id="search-1"
+              ref={searchRef}
+              onChange={handleSearch}
             />
           </Column>
           <Column>
@@ -35,8 +48,8 @@ const Home = () => {
             />
           </Column>
         </Grid>
-        <DataTable setData={setData} />
-        {isOpen ? <PopUp data={data} /> : null}
+        <DataTable setFormEditing={setFormEditing} searchValue={searchValue} />
+        {isOpen ? <PopUp formEditing={formEditing} /> : null}
       </Stack>
     </div>
   );

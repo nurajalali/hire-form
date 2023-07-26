@@ -9,21 +9,28 @@ import {
 } from "@carbon/react";
 import { useSelector, useDispatch } from "react-redux";
 
-const DataTable = ({ setData }) => {
+const DataTable = ({ setFormEditing, searchValue }) => {
   const rows = useSelector((store) => store.FormModels.rows);
   const isOpen = useSelector((store) => store.FormModels.isOpen);
-  const isEdit = useSelector((store) => store.FormModels.isEdit);
+
   const dispatch = useDispatch();
 
   const handleDelet = (id) => {
     dispatch.FormModels.RemoveRow(id);
+    console.log("delet", id);
   };
 
   const handleEdit = (id) => {
-    dispatch.FormModels.editForm(!isEdit);
+    dispatch.FormModels.isEdit();
     dispatch.FormModels.openForm(!isOpen);
-    setData(id)
+    setFormEditing(id);
+    // const updateRowTable = rows.map((row) => {
+    //   if (row.id === id) {
+    //     console.log(row.FirstName);
+    //   }
+    // });
   };
+
   return (
     <Table>
       <TableHead>
@@ -38,25 +45,32 @@ const DataTable = ({ setData }) => {
         </TableRow>
       </TableHead>
       <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.id}>
-            <TableCell>{row.FirstName}</TableCell>
-            <TableCell>{row.lastName}</TableCell>
-            <TableCell>{row.personalId}</TableCell>
-            <TableCell>{row.status}</TableCell>
-            <TableCell>{row.BirthDate}</TableCell>
-            <TableCell>
-              <Button kind="ghost" onClick={() => handleDelet(row.id)}>
-                Delet
-              </Button>
-            </TableCell>
-            <TableCell>
-              <Button kind="ghost" onClick={() => handleEdit(row.id)}>
-                Edit
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
+        {rows.map((row) => {
+          const rowData = (
+            <TableRow key={row.rowId}>
+              <TableCell>{row.FirstName}</TableCell>
+              <TableCell>{row.lastName}</TableCell>
+              <TableCell>{row.personalId}</TableCell>
+              <TableCell>{row.status}</TableCell>
+              <TableCell>{row.BirthDate}</TableCell>
+              <TableCell>
+                <Button kind="ghost" onClick={() => handleDelet(row.rowId)}>
+                  Delet
+                </Button>
+              </TableCell>
+              <TableCell>
+                <Button kind="ghost" onClick={() => handleEdit(row.rowId)}>
+                  Edit
+                </Button>
+              </TableCell>
+            </TableRow>
+          );
+          if (searchValue === "") {
+            return rowData;
+          } else if (row.FirstName.includes(searchValue)) {
+            return rowData;
+          }
+        })}
       </TableBody>
     </Table>
   );
